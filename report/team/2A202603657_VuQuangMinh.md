@@ -72,5 +72,9 @@ Chạy trong `src/` trên nhánh `chore/finalize-submission` (sau commit `f28d23
 - Với `test_orchestrator_team.py`: chạy thử orchestrator trên 14 claim public để xem trace thực tế trước khi viết assertion; rồi cố ý thay `make_handoff` bằng bản không sanitize, 15/22 test chuyển sang fail, nghĩa là test bắt được lỗi thật.
 
 ## 6. Tự đánh giá
-
-...
+- Tôi đã hoàn thành Shape A — Workflow theo đúng contract, đạt `62/62` test student và giữ cổng host luôn xanh.
+- Tôi triển khai và kiểm tra các ranh giới quan trọng: tiền do code tính, ticket không được dùng làm lệnh, refund chỉ ghi qua host, truyền quote đầy đủ và bảo đảm crash/resume không tạo thanh toán trùng.
+- Tôi bổ sung `src/tests/test_workflow_team.py` để kiểm tra ba điểm crash, trace sạch và trường hợp ticket khai sai số ngày trễ.
+- Với vai trò nhóm trưởng và integration, tôi phối hợp merge các shape, theo dõi test chung và tổng hợp báo cáo nhóm.
+- Hạn chế của phần việc là mới được đánh giá trên MockLLM và bộ public; kết quả chưa phản ánh độ trễ, hành vi bất định của LLM thật hoặc toàn bộ dữ liệu hidden.
+- Tôi tự đánh giá đã hoàn thành đúng phần được phân công, có commit kỹ thuật, test riêng và bằng chứng chạy lại được.
