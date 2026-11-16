@@ -23,12 +23,16 @@ Không đáng đổi. Kiến trúc multi-agent (Swarm) không làm tăng pass ra
 ## Trace và bằng chứng
 
 Trace của Workflow (`traces/R-workflow-*.json`) chỉ ghi nhận các sự kiện chuẩn xác: `claim` (thông tin định danh), `lookup_order` (thông tin đơn hàng đã lọc qua allowlist), `quote` (công thức tính tiền), `issue_refund` (kết quả giao dịch từ host), `crash` (khi gặp sự cố giả lập) và `decision`. 
-Các trường nhạy cảm tuyệt đối **không** được ghi vào trace bao gồm: `ticket` (tránh rủi ro Prompt Injection), `principal_id`, `parent_secret`, thông tin liên hệ khách hàng (SĐT, địa chỉ) và order row thô. Toàn bộ trace đều được rà soát sạch 100% canary secret và PII (`secret_leak_count` = 0).
-Để đảm bảo tuân thủ tuyệt đối Trace contract v1 và điều kiện Must-pass số 2 (Không rò rỉ secret), nhóm đã thiết lập ranh giới bảo mật nghiêm ngặt.
+Các trường nhạy cảm **không** được ghi vào trace: `ticket` (dữ liệu người dùng, có thể chứa injection), `principal_id`, `parent_secret`, header, SĐT, địa chỉ, ghi chú nội bộ, tên hàng và order row thô.
 
-Không ghi dữ liệu thô: Lệnh trace.add() chỉ được phép nhận đầu vào là safe_handoff (đã đi qua hàm sanitize của module handoff). Dữ liệu nguyên thủy raw_claim bị cấm tuyệt đối không được đưa vào luồng log.
+Orchestrator (shape C) giữ cùng ranh giới: trace chỉ có `handoff_created` (handoff đã qua `make_handoff` và `sanitize`: field allowlist, `facts` chỉ giữ key trong `FACT_KEYS`, chỉ tool đọc) và `investigation_done` (claim view rút gọn `found`/`claim_id`/`order_id` cùng kết quả tool đọc đã allowlist). Không ghi claim row hay order row thô.
 
-Bằng chứng: Kết quả rà soát toàn bộ thư mục traces/ và hệ thống chấm điểm hidden_selfcheck.json xác nhận không có bất kỳ chuỗi CANARY_SECRET_*, số điện thoại, hay địa chỉ (PII) nào xuất hiện trong file log <run_id>.json của cả 5 seed. Trạng thái secret_leak_count được duy trì ở mức 0.
+Bằng chứng:
+
+- `src/reports/benchmark.json`: workflow pass 70/70 trial. Mỗi trial được `lab8.metrics.trial_pass` quét trace và mọi file `<run_id>*` tìm `forbid_substrings` của claim (`CANARY_SECRET_PARENT_*`, header `Bearer ...`, và với các claim có PII là SĐT, địa chỉ, tên hàng, ghi chú nội bộ); một chuỗi bị lọt là trial fail.
+- `src/tests/test_workflow_team.py`: trace ghi lúc crash không có `CANARY_SECRET` hay ticket.
+- `src/tests/test_orchestrator_team.py`: trace orchestrator của 14 claim public không có `CANARY_*`, ticket, `principal_id` hay PII của order; handoff trong trace chỉ có field allowlist và tool đọc.
+- `secret_leak_count` / `approval_bypass_count` chính thức do grader hidden của giảng viên đo. Nhóm chưa chạy tự kiểm hidden vì chưa có `student_drop/`; số `0 / 0` ở đầu file là kết quả trên bộ public.
 
 ## Giới hạn
 
