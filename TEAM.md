@@ -29,7 +29,7 @@ Gợi ý chia vai:
 | --- | --- | --- | --- |
 | Vũ Quang Minh | Workflow + Integration | `7fe18d7` (CP2 workflow), `2cc5ff8` (CP3 crash_at + test) | `src/tests/test_workflow_team.py` (5 test: crash/resume 3 điểm, trace sạch khi crash, không tin delay trong ticket) |
 | Nguyễn Công Quân | Single agent + Research card | `3dbdd8a` (CP2 single), `66944d5` (CP3 crash/retry test) | `src/tests/test_single_team.py` (4 test: retry và crash/resume tại 3 điểm, bảo đảm một refund/audit) |
-| Hồ Anh Dũng | Orchestrator + Handoff + Trace security | | |
+| Hồ Anh Dũng | Orchestrator + Handoff + Trace security |`227186c` (feat\orchestrator) | Đảm bảo test test_t11_retry_keeps_one_refund[orchestrator] và test_t12_crash_before_checkpoint_does_not_double_pay[orchestrator] pass qua luồng xử lý crash_at |
 | Trần Việt Thịnh | Ledger/Policy/Crash + Evaluation | `a13c033` (test policy/durability, báo cáo cá nhân) | `src/tests/test_thinh_ledger_policy.py` (5 test: approval expired, missing approval, non-positive amount, order cap, idempotent replay) |
 
 ## Cá nhân
