@@ -32,7 +32,7 @@ from __future__ import annotations
 import sqlite3
 
 from lab8.db import connect
-from lab8.durability import issue_refund
+from lab8.durability import InjectedCrash, issue_refund
 from lab8.mock_llm import complete
 from lab8.schemas import Budget, RunResult, make_run_id
 from lab8.shapes.common import finish
@@ -49,16 +49,14 @@ def run_claim(
     store_path: str,
     crash_at: str | None = None,
 ) -> RunResult:
-    # TODO CP3 (student): truyền crash_at vào durability.issue_refund, không bắt InjectedCrash.
-    del crash_at
     conn = connect(store_path)
     try:
-        return _run(conn, claim_id, seed=seed)
+        return _run(conn, claim_id, seed=seed, crash_at=crash_at)
     finally:
         conn.close()
 
 
-def _run(conn: sqlite3.Connection, claim_id: str, *, seed: int) -> RunResult:
+def _run(conn: sqlite3.Connection, claim_id: str, *, seed: int, crash_at: str | None) -> RunResult:
     budget = Budget()
     trace = Trace(make_run_id(SHAPE, claim_id, seed))
 
@@ -113,7 +111,15 @@ def _run(conn: sqlite3.Connection, claim_id: str, *, seed: int) -> RunResult:
 
     # Bước 6: truyền QUOTE ĐẦY ĐỦ. Host tự kiểm approval, trần theo đơn, idempotency
     # và tự trừ phần các claim trước đã nhận (T13, T14). Không tự trừ ở đây.
-    outcome = issue_refund(conn, claim_id, proposal)
+    # CP3: crash_at đi thẳng vào host. InjectedCrash phải lan ra ngoài để mô phỏng
+    # crash thật; chỉ ghi trace trước khi raise lại, không nuốt exception.
+    # Lần chạy lại sau crash an toàn nhờ idempotency key refund:{claim_id} trong ledger.
+    try:
+        outcome = issue_refund(conn, claim_id, proposal, crash_at=crash_at)
+    except InjectedCrash:
+        trace.add("crash", {"at": crash_at})
+        trace.write()
+        raise
     trace.add(
         "issue_refund",
         {"ok": outcome["ok"], "reason": outcome["reason"], "conflict": outcome["conflict"]},

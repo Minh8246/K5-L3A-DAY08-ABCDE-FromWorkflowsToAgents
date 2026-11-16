@@ -27,7 +27,7 @@ Gợi ý chia vai:
 
 | Người | Vai | Commit | Test đã thêm hoặc sửa |
 | --- | --- | --- | --- |
-| Vũ Quang Minh | Workflow + Integration | | |
+| Vũ Quang Minh | Workflow + Integration | `7fe18d7` (CP2 workflow), `2cc5ff8` (CP3 crash_at + test) | `src/tests/test_workflow_team.py` (5 test: crash/resume 3 điểm, trace sạch khi crash, không tin delay trong ticket) |
 | Nguyễn Công Quân | Single agent + Research card | | |
 | Hồ Anh Dũng | Orchestrator + Handoff + Trace security | | |
 | Trần Việt Thịnh | Ledger/Policy/Crash + Evaluation | | |
