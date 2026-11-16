@@ -5,7 +5,7 @@
 - Tên nhóm: ABCDE
 - Lớp: L3A
 - Repo nhóm: `K5-L3A-DAY08-ABCDE-FromWorkflowsToAgents` (xem [SUBMISSION.md](SUBMISSION.md))
-- URL repo, nhánh nộp, commit chốt: https://github.com/Minh8246/K5-L3A-DAY08-ABCDE-FromWorkflowsToAgents, `main`, commit chốt điền ở CP5
+- URL repo, nhánh nộp, commit chốt: https://github.com/Minh8246/K5-L3A-DAY08-ABCDE-FromWorkflowsToAgents, `main`, `d7c1ecf`
 
 ## Thành viên
 
