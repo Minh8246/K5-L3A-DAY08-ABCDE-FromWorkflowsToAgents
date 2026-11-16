@@ -24,6 +24,11 @@ Không đáng đổi. Kiến trúc multi-agent (Swarm) không làm tăng pass ra
 
 Trace của Workflow (`traces/R-workflow-*.json`) chỉ ghi nhận các sự kiện chuẩn xác: `claim` (thông tin định danh), `lookup_order` (thông tin đơn hàng đã lọc qua allowlist), `quote` (công thức tính tiền), `issue_refund` (kết quả giao dịch từ host), `crash` (khi gặp sự cố giả lập) và `decision`. 
 Các trường nhạy cảm tuyệt đối **không** được ghi vào trace bao gồm: `ticket` (tránh rủi ro Prompt Injection), `principal_id`, `parent_secret`, thông tin liên hệ khách hàng (SĐT, địa chỉ) và order row thô. Toàn bộ trace đều được rà soát sạch 100% canary secret và PII (`secret_leak_count` = 0).
+Để đảm bảo tuân thủ tuyệt đối Trace contract v1 và điều kiện Must-pass số 2 (Không rò rỉ secret), nhóm đã thiết lập ranh giới bảo mật nghiêm ngặt.
+
+Không ghi dữ liệu thô: Lệnh trace.add() chỉ được phép nhận đầu vào là safe_handoff (đã đi qua hàm sanitize của module handoff). Dữ liệu nguyên thủy raw_claim bị cấm tuyệt đối không được đưa vào luồng log.
+
+Bằng chứng: Kết quả rà soát toàn bộ thư mục traces/ và hệ thống chấm điểm hidden_selfcheck.json xác nhận không có bất kỳ chuỗi CANARY_SECRET_*, số điện thoại, hay địa chỉ (PII) nào xuất hiện trong file log <run_id>.json của cả 5 seed. Trạng thái secret_leak_count được duy trì ở mức 0.
 
 ## Giới hạn
 
