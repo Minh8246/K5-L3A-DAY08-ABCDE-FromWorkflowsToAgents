@@ -69,7 +69,7 @@ Mô tả ba shape nhóm viết (workflow, single, orchestrator): mỗi shape đ�
 
 **Trace.** Shape ghi `agent_action`, quan sát đã rút gọn (`found`, `has_order_id`, `visible`, quote), `react_stop`, `issue_refund` và `decision`. Cố ý không ghi ticket, principal, claim/order row thô, secret, header hay PII. Ma trận student của Single đạt `62/62`.
 
-**Ablation CP5.** Trên 14 claim × 5 seed, Workflow và Single cùng pass rate/pass^5 `1.000`. Single có cost/success mô phỏng `30.70` so với `28.87` VND và mean steps `8.21` so với `4.43`; vòng agent không tăng độ đúng trên flow public tuần tự nhưng tăng overhead. Chi tiết ở `research_card.md` và `src/reports/ablation_workflow_single.json`.
+**Ablation CP5.** Lát cắt Workflow–Single từ benchmark chính `src/reports/benchmark.json` cho thấy trên 14 claim × 5 seed, hai shape cùng pass rate/pass^5 `1.000`. Single có cost/success mô phỏng `30.70` so với `28.87` VND và mean steps `8.21` so với `4.43`; vòng agent không tăng độ đúng trên flow public tuần tự nhưng tăng overhead. Nhóm chạy lại đúng lát cắt này vào `src/reports/ablation_workflow_single.json` và thu được cùng số liệu. Chi tiết phương pháp và boundary ở `research_card.md`.
 
 ### Shape C — orchestrator
 
