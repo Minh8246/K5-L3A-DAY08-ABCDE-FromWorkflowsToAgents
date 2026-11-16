@@ -80,16 +80,22 @@ Nhóm đã thực thi kiểm thử toàn diện trên bộ lỗi giả lập 20 
 - **CR-19 (`retry_without_approval`):** Khiếu nại thiếu approval hợp lệ bị từ chối nhất quán qua mọi lần gọi lại, ngăn chặn tuyệt đối việc bypass approval.
 - **CR-20 (`swarm_after_effect_before_checkpoint`):** Xác thực an toàn crash trên luồng xử lý multi-agent thực tế (Swarm), xác nhận khả năng phục hồi đồng bộ.
 
-### 4.2. Bảng so sánh 4 kiến trúc (đang chờ kết quả benchmark từ CP5)
+### 4.2. Bảng so sánh 4 kiến trúc (kết quả benchmark từ CP5)
 
-*(Bảng số liệu tổng hợp từ `src/reports/benchmark.json` trên 5 seed 11, 22, 33, 44, 55 sẽ được cập nhật đầy đủ ngay khi Shape C hoàn tất)*.
+Bảng số liệu tổng hợp từ `src/reports/benchmark.json` trên 5 seed (11, 22, 33, 44, 55) qua 14 claims (70 trials mỗi shape):
 
 | Shape | Pass rate | Pass^5 | Seed min-max | Variance | Cost/success (VND) | Mean steps | P95 steps |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| A `workflow` | ... | ... | ... | ... | ... | ... | ... |
-| B `single` | ... | ... | ... | ... | ... | ... | ... |
-| C `orchestrator` | ... | ... | ... | ... | ... | ... | ... |
-| D `swarm` | ... | ... | ... | ... | ... | ... | ... |
+| A `workflow` | 1.000 | 1.000 | 1.000 – 1.000 | 0.000000 | 28.87 | 4.43 | 5.0 |
+| B `single` | 1.000 | 1.000 | 1.000 – 1.000 | 0.000000 | 30.70 | 8.21 | 9.0 |
+| C `orchestrator` | 1.000 | 1.000 | 1.000 – 1.000 | 0.000000 | 40.00 | 2.00 | 2.0 |
+| D `swarm` | 0.986 | 0.929 | 0.929 – 1.000 | 0.000816 | 49.57 | 2.80 | 3.0 |
+
+**Nhận xét:**
+- **Shape A (Workflow):** Đạt chi phí thấp nhất (28.87 VND/thành công) và độ ổn định tuyệt đối (variance = 0), không phụ thuộc vào vòng lặp suy luận của model.
+- **Shape B (Single):** Số bước thực thi cao nhất (8.21 bước trung bình) do vòng lặp ReAct phải liên tục thăm dò và gọi tool tuần tự, chi phí cao hơn workflow (30.70 VND).
+- **Shape C (Orchestrator):** Số bước ngắn nhất (2.0 bước) nhờ cơ chế dispatch chuyên biệt của orchestrator và investigator, nhưng chi phí cao hơn (40.00 VND) do tải payload handoff.
+- **Shape D (Swarm):** Đắt nhất (49.57 VND) và có độ dao động (variance = 0.000816, pass^5 chỉ đạt 0.929 do lỗi ở seed 55 trên claim C-002: status resolved != denied). Nhóm chọn **Workflow** vì là kiến trúc ít tự chủ nhất mà vẫn đạt 100% hiệu năng và an toàn tối đa.
 
 Quyết định kiến trúc và lý do: xem `report/team/decision_adr.md`. Phiếu nghiên cứu và ablation: xem `report/team/research_card.md`.
 
