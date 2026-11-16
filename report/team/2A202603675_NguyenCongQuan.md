@@ -20,7 +20,7 @@
 - Commit `66944d5`: thêm test idempotent retry và crash/resume tại `before_effect`, `after_effect_before_checkpoint`, `after_checkpoint`.
 - Giữ ranh giới code/model: MockLLM chỉ mô phỏng quyết định/soạn phản hồi; quote do `compute_compensation` tính; chỉ code sau vòng ReAct mới gọi `issue_refund` với quote đầy đủ.
 - Trace chỉ ghi control state và kết quả allowlist, không ghi ticket, claim/order row thô, secret hoặc PII.
-- Chạy ablation 140 trial, giữ nguyên model/tool/seed/corpus/pricing/evaluator và chỉ đổi shape Workflow → Single.
+- Phân tích lát cắt Workflow–Single từ benchmark chính của nhóm và chạy tái lập 140 trial, giữ nguyên model/tool/seed/corpus/pricing/evaluator, chỉ đổi shape.
 
 ## 4. Bằng chứng
 
@@ -28,7 +28,7 @@
 - Commit CP3: `66944d5 test: verify single-agent crash recovery`.
 - Test riêng Single: `62 passed`; cổng host sau khi merge: `68 passed`; toàn ma trận student: `248 passed`.
 - Test đã thêm: `test_single_retry_keeps_one_refund` và `test_single_crash_then_resume_keeps_one_refund` (ba crash point).
-- Báo cáo ablation: `src/reports/ablation_workflow_single.json`; run dẫn chứng `R-single-C-001-s11`.
+- Bằng chứng chính: `src/reports/benchmark.json`; báo cáo tái lập: `src/reports/ablation_workflow_single.json`; run dẫn chứng `R-single-C-001-s11`.
 - Kết quả: Single và Workflow cùng pass rate/pass^5 `1.000`; Single tăng cost/success mô phỏng 6.34% và mean steps 85.48%.
 
 ## 5. Công cụ AI đã dùng
@@ -41,4 +41,4 @@
 
 - Hoàn thành đúng phần Single Agent CP2–CP3, có commit kỹ thuật và test riêng.
 - Có thể giải thích ranh giới code/model, lý do truyền quote đầy đủ, idempotency key `refund:{claim_id}` và vì sao ticket không phải lệnh.
-- Hạn chế: ablation dùng MockLLM và public corpus nhỏ; cần benchmark chính bốn shape và hidden self-check để củng cố quyết định kiến trúc toàn nhóm.
+- Hạn chế: benchmark/ablation dùng MockLLM và public corpus nhỏ; kết quả chính thức vẫn phụ thuộc bộ hidden của giảng viên, còn hidden self-check chỉ chạy được khi nhóm nhận `student_drop/`.
