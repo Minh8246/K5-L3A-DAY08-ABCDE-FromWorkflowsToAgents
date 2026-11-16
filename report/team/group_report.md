@@ -6,7 +6,7 @@ Tối đa 5 trang ngoài phụ lục. Số liệu lấy từ file trong `src/rep
 
 - Tên nhóm: ABCDE
 - Thành viên: xem `TEAM.md`
-- Commit chốt (trùng `report/team/decision_adr.md`):
+- Commit chốt (trùng `report/team/decision_adr.md`): `d7c1ecf`
 
 ## 2. Mục tiêu và cách tiếp cận
 
@@ -73,13 +73,15 @@ Mô tả ba shape nhóm viết (workflow, single, orchestrator): mỗi shape đ�
 
 ### Shape C — orchestrator
 
-**Kiến trúc Orchestrator (Shape C):** Nhóm thiết lập cơ chế phân quyền rõ ràng giữa Orchestrator (chạy bằng code Python) và Investigator (Agent ReAct).
+**Kiến trúc Orchestrator (Shape C):** Nhóm thiết lập cơ chế phân quyền rõ ràng giữa Orchestrator (chạy bằng code Python) và Investigator (`lab8.runtime.run_readonly_investigators`). Trong lab, investigator là code gọi lần lượt các tool đọc có tên trong handoff, không gọi model: benchmark ghi `mean_model_calls = 0` cho shape C.
 
-**Handoff an toàn:** Dữ liệu raw_claim lấy từ cơ sở dữ liệu chứa các thông tin nhạy cảm (parent_secret, PII). Nhóm đã sử dụng hàm lab8.handoff.make_handoff để sanitize dữ liệu, chỉ giữ lại các trường trong ALLOWED_FIELDS trước khi đóng gói thành safe_handoff.
+**Handoff an toàn:** Claim view lấy từ `get_claim_view` có ticket và `principal_id`. Nhóm dùng `lab8.handoff.make_handoff` để dựng handoff: chỉ giữ field trong `ALLOWED_FIELDS`, `facts` chỉ giữ key trong `FACT_KEYS` (claim view không có key nào thuộc nhóm này nên `facts` rỗng, investigator tự đọc order qua `lookup_order`), rồi `sanitize` từ chối nếu còn `CANARY_SECRET_`, `parent_secret`, header hay write tool.
 
-**Ủy quyền đọc (Read-only):** Investigator được gọi qua hàm run_readonly_investigators với danh sách tool giới hạn ở mức chỉ đọc (ví dụ: lookup_order, lookup_policy).
+**Ủy quyền đọc (Read-only):** Handoff chỉ cấp `lookup_order`, `lookup_policy`, `lookup_refund_history`, `get_clause`; `runtime.dispatch` chạy với `worker=True` nên investigator không gọi được write tool.
 
-**Bảo vệ luồng ghi tiền:** Sau khi AI hoàn tất điều tra, toàn bộ việc tính toán bồi thường (compute_compensation) và cam kết giao dịch (durability.issue_refund) đều do Orchestrator (Python) ép kiểu và thực thi bằng tham số conn tĩnh, loại bỏ hoàn toàn rủi ro AI tự xuất lệnh "ảo" cấp tiền sai quy định.
+**Bảo vệ luồng ghi tiền:** Sau khi investigator trả báo cáo, orchestrator tính quote bằng `compute_compensation` trên order view đã allowlist, rồi gọi `durability.issue_refund` với **quote đầy đủ** và `crash_at`; host kiểm approval, trần theo đơn và idempotency. Investigator không có write tool nên không thể tự ghi tiền.
+
+**Trace.** Hai event: `handoff_created` (handoff đã sanitize) và `investigation_done` (claim view rút gọn và kết quả tool đọc đã allowlist). Không ghi ticket, `principal_id`, claim row hay order row thô. `src/tests/test_orchestrator_team.py` kiểm crash/resume ở 3 điểm, handoff trong trace và quét trace của 14 claim public tìm secret/PII.
 
 ## 4. Kết quả
 
@@ -108,7 +110,7 @@ Bảng số liệu tổng hợp từ `src/reports/benchmark.json` trên 5 seed (
 **Nhận xét:**
 - **Shape A (Workflow):** Đạt chi phí thấp nhất (28.87 VND/thành công) và độ ổn định tuyệt đối (variance = 0), không phụ thuộc vào vòng lặp suy luận của model.
 - **Shape B (Single):** Số bước thực thi cao nhất (8.21 bước trung bình) do vòng lặp ReAct phải liên tục thăm dò và gọi tool tuần tự, chi phí cao hơn workflow (30.70 VND).
-- **Shape C (Orchestrator):** Số bước ngắn nhất (2.0 bước) nhờ cơ chế dispatch chuyên biệt của orchestrator và investigator, nhưng chi phí cao hơn (40.00 VND) do tải payload handoff.
+- **Shape C (Orchestrator):** Cost/success 40.00 VND đến hoàn toàn từ 4 tool call × 10 VND (shape C không gọi model, `mean_model_calls = 0`), cao hơn workflow vì investigator đọc thêm `lookup_policy` và `lookup_refund_history`. `steps` đếm số event trong trace; orchestrator chỉ ghi 2 event nên con số 2.0 không có nghĩa là xử lý nhanh hơn các shape khác.
 - **Shape D (Swarm):** Đắt nhất (49.57 VND) và có độ dao động (variance = 0.000816, pass^5 chỉ đạt 0.929 do lỗi ở seed 55 trên claim C-002: status resolved != denied). Nhóm chọn **Workflow** vì là kiến trúc ít tự chủ nhất mà vẫn đạt 100% hiệu năng và an toàn tối đa.
 
 Quyết định kiến trúc và lý do: xem `report/team/decision_adr.md`. Phiếu nghiên cứu và ablation: xem `report/team/research_card.md`.
