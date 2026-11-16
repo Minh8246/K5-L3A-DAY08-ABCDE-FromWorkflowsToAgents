@@ -29,7 +29,11 @@ Mọi lệnh chạy trong `src/`.
 | **CP4** 15:30 | Hỗ trợ Quân nếu single chưa xong | Sửa single nếu còn fail; bắt đầu research card | Quét `traces/` tìm `CANARY_SECRET_*` và PII | `python -m lab8.crash_test --count 20 --out reports/crash.json` đạt **20/20** |
 | **CP5** 16:15 | Tổng hợp group report, chốt commit hash, `python -m lab8.check_submission` ra 0 FAIL | Ablation + `research_card.md` | `decision_adr.md` mục "Trace và bằng chứng" | Benchmark 4 shape × 5 seed, tự kiểm hidden, điền số liệu `decision_adr.md` |
 
-Lệnh tự kiểm một shape: `python -m pytest -q -m student -o addopts= -k workflow` (thay `workflow` bằng `single`, `orchestrator`).
+Lệnh tự kiểm một shape (mỗi lệnh chọn đúng 62 test):
+
+- Workflow: `python -m pytest -q -m student -o addopts= -k workflow`
+- Orchestrator: `python -m pytest -q -m student -o addopts= -k orchestrator`
+- Single: `python -m pytest -q -m student -o addopts= -k "single and not workflow and not orchestrator and not swarm"`. **Không dùng `-k single`**: tên hàm `test_public_single_run_cases` có chữ "single" nên lệnh đó chọn 242 test của cả 4 shape.
 
 ## Báo cáo
 
