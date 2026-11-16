@@ -69,9 +69,27 @@ Mô tả ba shape nhóm viết (workflow, single, orchestrator): mỗi shape đ�
 
 ## 4. Kết quả
 
-Bảng so sánh 4 shape trên bộ public (từ `src/reports/benchmark.json`): pass rate, pass^5, seed min–max, variance, cost/success, mean/p95 steps. Kèm crash safety (`src/reports/crash.json`) và, nếu có, kết quả tự kiểm trên `student_drop/`.
+### 4.1. An toàn khi gặp sự cố và Crash Safety (`src/reports/crash.json`)
 
-...
+Nhóm đã thực thi kiểm thử toàn diện trên bộ lỗi giả lập 20 điểm (`python -m lab8.crash_test --count 20 --out reports/crash.json`), đạt kết quả tuyệt đối **`crash_safety 20/20`** (100% pass):
+
+- **CR-01 đến CR-05 (`before_effect`):** Crash kích hoạt trước khi ghi nhận tác vụ hoàn tiền. Khi khôi phục, hệ thống hoàn tiền thành công đúng 1 lần, không tạo trạng thái dở dang hay dòng audit rác.
+- **CR-06 đến CR-12 (`after_effect_before_checkpoint`):** Crash kích hoạt ngay sau khi ghi ledger nhưng trước khi hoàn tất checkpoint. Khi resume, cơ chế khóa Idempotency `refund:{claim_id}` trong cùng một SQLite transaction nhận diện `idempotent_replay`, bảo đảm không bao giờ thanh toán trùng lặp (không double pay) và giữ đúng 1 sự kiện audit `refund_committed`.
+- **CR-13 đến CR-17 (`after_checkpoint`):** Crash sau checkpoint hoàn tiền, hệ thống nhận diện checkpoint hợp lệ và kết thúc an toàn.
+- **CR-18 (`amount_conflict_on_retry`):** Khi gọi lại cùng một claim với số tiền khác số tiền đã commit, Host phát hiện xung đột (`conflict=True`), bảo vệ nguyên vẹn số tiền đã ghi nhận ban đầu.
+- **CR-19 (`retry_without_approval`):** Khiếu nại thiếu approval hợp lệ bị từ chối nhất quán qua mọi lần gọi lại, ngăn chặn tuyệt đối việc bypass approval.
+- **CR-20 (`swarm_after_effect_before_checkpoint`):** Xác thực an toàn crash trên luồng xử lý multi-agent thực tế (Swarm), xác nhận khả năng phục hồi đồng bộ.
+
+### 4.2. Bảng so sánh 4 kiến trúc (đang chờ kết quả benchmark từ CP5)
+
+*(Bảng số liệu tổng hợp từ `src/reports/benchmark.json` trên 5 seed 11, 22, 33, 44, 55 sẽ được cập nhật đầy đủ ngay khi Shape C hoàn tất)*.
+
+| Shape | Pass rate | Pass^5 | Seed min-max | Variance | Cost/success (VND) | Mean steps | P95 steps |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| A `workflow` | ... | ... | ... | ... | ... | ... | ... |
+| B `single` | ... | ... | ... | ... | ... | ... | ... |
+| C `orchestrator` | ... | ... | ... | ... | ... | ... | ... |
+| D `swarm` | ... | ... | ... | ... | ... | ... | ... |
 
 Quyết định kiến trúc và lý do: xem `report/team/decision_adr.md`. Phiếu nghiên cứu và ablation: xem `report/team/research_card.md`.
 
@@ -87,9 +105,11 @@ Chi tiết đóng góp của từng thành viên nằm trong `TEAM.md` (bảng �
 
 ## 7. Hạn chế và hướng cải thiện
 
-MockLLM không phải model sản xuất; latency là `unavailable`. Nêu thêm giới hạn của nhóm và điều kiện làm kết luận thay đổi.
-
-...
+- **Giới hạn của MockLLM:** Hệ thống thử nghiệm sử dụng MockLLM với phản hồi xác định dựa trên seed và tra cứu nội bộ; không phản ánh độ trễ mạng thực tế (`latency` ở trạng thái `unavailable`) hay các hành vi ảo giác (hallucination) ngẫu nhiên, không kiểm soát của các mô hình LLM thương mại lớn.
+- **Phạm vi bài toán và tập dữ liệu:** Thử nghiệm tập trung vào quy trình bồi thường chậm trễ đơn hàng với các quy tắc tài chính rõ ràng. Trong môi trường thực tế với khiếu nại phức tạp, bằng chứng hình ảnh hư hỏng đa chiều hoặc nội dung phi cấu trúc, các agent tự chủ cao hơn có thể có thêm đất diễn trong khâu phân loại và phân tích thông tin đầu vào.
+- **Điều kiện đảo chiều quyết định (Flipping conditions):**
+  - Nếu chi phí tính toán và token giảm về mức không đáng kể, hoặc khi quy tắc nghiệp vụ liên tục thay đổi hàng ngày (không thể viết code cố định kịp thời), kiến trúc Agent có thể được ưu tiên hơn nhờ tính thích ứng linh hoạt.
+  - Tuy nhiên, trong các nghiệp vụ tác động trực tiếp đến dòng tiền (Ledger/Financial impact), nguyên tắc "ít tự chủ nhất vẫn làm được việc" kết hợp cơ chế kiểm soát Host nghiêm ngặt luôn là phòng tuyến vững chắc nhất chống gian lận và rò rỉ ngân sách.
 
 ## 8. Tài liệu tham khảo
 
