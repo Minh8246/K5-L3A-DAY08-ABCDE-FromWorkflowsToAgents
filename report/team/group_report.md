@@ -73,7 +73,13 @@ Mô tả ba shape nhóm viết (workflow, single, orchestrator): mỗi shape đ�
 
 ### Shape C — orchestrator
 
-...
+**Kiến trúc Orchestrator (Shape C):** Nhóm thiết lập cơ chế phân quyền rõ ràng giữa Orchestrator (chạy bằng code Python) và Investigator (Agent ReAct).
+
+**Handoff an toàn:** Dữ liệu raw_claim lấy từ cơ sở dữ liệu chứa các thông tin nhạy cảm (parent_secret, PII). Nhóm đã sử dụng hàm lab8.handoff.make_handoff để sanitize dữ liệu, chỉ giữ lại các trường trong ALLOWED_FIELDS trước khi đóng gói thành safe_handoff.
+
+**Ủy quyền đọc (Read-only):** Investigator được gọi qua hàm run_readonly_investigators với danh sách tool giới hạn ở mức chỉ đọc (ví dụ: lookup_order, lookup_policy).
+
+**Bảo vệ luồng ghi tiền:** Sau khi AI hoàn tất điều tra, toàn bộ việc tính toán bồi thường (compute_compensation) và cam kết giao dịch (durability.issue_refund) đều do Orchestrator (Python) ép kiểu và thực thi bằng tham số conn tĩnh, loại bỏ hoàn toàn rủi ro AI tự xuất lệnh "ảo" cấp tiền sai quy định.
 
 ## 4. Kết quả
 
