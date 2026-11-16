@@ -61,7 +61,15 @@ Mô tả ba shape nhóm viết (workflow, single, orchestrator): mỗi shape đ�
 
 ### Shape B — single agent
 
-...
+**Đọc gì và chạy agent ra sao.** Shape dùng `run_react(..., max_steps=8, worker=True)` với một `decide()` giữ state điều khiển. Agent lần lượt chọn ba read tool `get_claim_view`, `lookup_order`, `compute_compensation`; `runtime.dispatch` từ chối write tool khi actor là worker. Prompt model chỉ chứa phase và tên tool trước, không chứa ticket hay database row. Số ngày/điều khoản viết trong ticket vì vậy không thể ghi đè nguồn sự thật từ order và policy hiện hành.
+
+**Quyết định và ranh giới code/model.** Mỗi bước `decide()` gọi MockLLM để tính model call/token/cost mô phỏng, nhưng tiền chỉ lấy từ `compute_compensation` trên order allowlist. Agent kết thúc với `failed`, `needs_info`, `escalated`, `denied` hoặc trạng thái nội bộ `ready`. Chỉ code Python bên ngoài vòng ReAct mới gọi `issue_refund`; actor không có write registry. Host tiếp tục kiểm approval, principal, trần theo đơn và idempotency trước khi commit.
+
+**Refund và crash.** Khi quote dương, shape truyền **quote đầy đủ** cùng `crash_at` vào host. Kết quả host từ chối thành `denied` (hoặc `failed` khi conflict), thành công thành `resolved`. `src/tests/test_single_team.py` kiểm retry và cả ba crash point; sau resume vẫn đúng một ledger row, một audit `refund_committed` và idempotency key `refund:{claim_id}`.
+
+**Trace.** Shape ghi `agent_action`, quan sát đã rút gọn (`found`, `has_order_id`, `visible`, quote), `react_stop`, `issue_refund` và `decision`. Cố ý không ghi ticket, principal, claim/order row thô, secret, header hay PII. Ma trận student của Single đạt `62/62`.
+
+**Ablation CP5.** Trên 14 claim × 5 seed, Workflow và Single cùng pass rate/pass^5 `1.000`. Single có cost/success mô phỏng `30.70` so với `28.87` VND và mean steps `8.21` so với `4.43`; vòng agent không tăng độ đúng trên flow public tuần tự nhưng tăng overhead. Chi tiết ở `research_card.md` và `src/reports/ablation_workflow_single.json`.
 
 ### Shape C — orchestrator
 
@@ -97,7 +105,9 @@ Quyết định kiến trúc và lý do: xem `report/team/decision_adr.md`. Phi�
 
 Lỗi gặp phải (kèm lệnh, output hoặc ảnh chụp) và cách nhóm xử lý.
 
-...
+- **Bộ lọc pytest của Single:** lệnh ngắn `-k single` khớp cả tên hàm `test_public_single_run_cases`, nên vô tình chạy case của bốn shape và hiển thị lỗi từ shape chưa hoàn thành. Nhóm dùng bộ lọc chính xác `-k "single and not workflow and not orchestrator and not swarm"`, xác nhận riêng Shape B đạt `62 passed`.
+- **Ranh giới agent/host:** vòng ReAct ban đầu dễ bị hiểu là nơi gọi write tool. Nhóm đặt `worker=True`, chỉ dispatch read tool và chuyển việc ghi refund ra code sau vòng lặp; test crash/retry chứng minh host vẫn giữ exactly-once effect.
+- **Python trên máy Windows:** `py` mặc định trỏ tới Python 3.14 trong khi lab hỗ trợ 3.11–3.13. Nhóm tạo `.venv` trực tiếp bằng Python 3.13.5, cài `requirements.txt`, rồi xác minh bằng `lab8.smoke pass` và host gate xanh.
 
 ## 6. Tổng hợp đóng góp
 
@@ -113,4 +123,6 @@ Chi tiết đóng góp của từng thành viên nằm trong `TEAM.md` (bảng �
 
 ## 8. Tài liệu tham khảo
 
-...
+- Yubin Kim et al., [*Towards a Science of Scaling Agent Systems*](https://arxiv.org/abs/2512.08296), 2025/2026 — nguồn cho hypothesis và boundary của ablation Workflow–Single.
+- Shunyu Yao et al., [*ReAct: Synergizing Reasoning and Acting in Language Models*](https://arxiv.org/abs/2210.03629), ICLR 2023 — mô hình vòng action/observation dùng để tổ chức Shape B.
+- Tài liệu nội bộ của lab: `docs/business_rules.md`, `docs/contracts.md`, `docs/metrics.md` và `src/README.md`.
