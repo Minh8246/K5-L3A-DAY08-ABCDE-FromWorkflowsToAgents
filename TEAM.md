@@ -2,17 +2,19 @@
 
 ## Thông tin nhóm
 
-- Tên nhóm:
+- Tên nhóm: ABCDE
 - Lớp: L3A
-- Repo nhóm: `K5-L3A-DAY08-TenNhom-FromWorkflowsToAgents` (xem [SUBMISSION.md](SUBMISSION.md))
-- URL repo, nhánh nộp, commit chốt:
+- Repo nhóm: `K5-L3A-DAY08-ABCDE-FromWorkflowsToAgents` (xem [SUBMISSION.md](SUBMISSION.md))
+- URL repo, nhánh nộp, commit chốt: https://github.com/Minh8246/K5-L3A-DAY08-ABCDE-FromWorkflowsToAgents, `main`, commit chốt điền ở CP5
 
 ## Thành viên
 
 | STT | Họ tên | MSSV | Email | GitHub | Vai trò |
 | --: | ------ | ---- | ----- | ------ | ------- |
-|   1 |        |      |       |        |         |
-|   2 |        |      |       |        |         |
+|   1 |Vũ Quang Minh| 2A202603657|vuquangminh897@gmail.com|Minh8246| Nhóm trưởng: Workflow (A) + Integration |
+|   2 |Nguyễn Công Quân|2A202603675|nguyencongquancn06@gmail.com|nguyencongquana2| Single agent (B) + Research card |
+|   3 |Hồ Anh Dũng|2A202603613|hoanhdungsongcau@gmail.com|ITCSIU21172| Orchestrator (C) + Handoff + Trace security |
+|   4 |Trần Việt Thịnh|2A202603661|thinhkesat@gmail.com  |  ThinhTran-codee      | Ledger/Policy/Crash + Evaluation |
 
 Gợi ý chia vai:
 
@@ -25,7 +27,10 @@ Gợi ý chia vai:
 
 | Người | Vai | Commit | Test đã thêm hoặc sửa |
 | --- | --- | --- | --- |
-| | | | |
+| Vũ Quang Minh | Workflow + Integration | | |
+| Nguyễn Công Quân | Single agent + Research card | | |
+| Hồ Anh Dũng | Orchestrator + Handoff + Trace security | | |
+| Trần Việt Thịnh | Ledger/Policy/Crash + Evaluation | | |
 
 ## Cá nhân
 
