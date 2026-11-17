@@ -12,25 +12,31 @@
 - **Vai trò:** Ledger/Policy/Crash + Evaluation.
 - **Nhiệm vụ:**
   - Viết test kiểm thử các ràng buộc bảo vệ của Host (Policy gate, Approval validity, Order cap, Idempotency).
+  - Viết test tích hợp các shape policy (`src/tests/test_shapes_policy_integration.py`).
   - Chạy và đánh giá crash test suite (`reports/crash.json`), bảo đảm đạt chỉ tiêu 20/20.
-  - Chạy benchmark đo đạc độ ổn định, chi phí, pass rate 4 kiến trúc qua 5 seed (`reports/benchmark.json`).
-  - Viết mục 4 (Kết quả), mục 7 (Hạn chế) trong `group_report.md` và cung cấp số liệu thực nghiệm cho `decision_adr.md`.
+  - Chạy benchmark đo đạc độ ổn định, chi phí, pass‑rate cho 4 kiến trúc qua 5 seed (`reports/benchmark.json`).
+  - Cập nhật mục 4 (Kết quả) và mục 7 (Hạn chế) trong `group_report.md` và cung cấp số liệu thực nghiệm cho `decision_adr.md`.
 
 ## 3. Đóng góp cụ thể
 
-- **Test đã thêm:** Xây dựng file `src/tests/test_thinh_ledger_policy.py` kiểm tra chặt chẽ các luật host và durability:
-  1. `test_expired_approval_is_rejected_by_host`: Đảm bảo approval hết hạn (`expires_at < today`) bị từ chối với lý do `approval_expired` và ghi audit `policy_denied`.
-  2. `test_missing_approval_record_is_rejected_by_host`: Đảm bảo claim trỏ vào approval không tồn tại bị chặn với lý do `missing_approval`.
-  3. `test_non_positive_amount_is_rejected_by_host`: Kiểm tra authorization chặn các đề xuất số tiền <= 0 (`non_positive_amount`).
-  4. `test_cap_at_paid_amount_minus_already_refunded`: Kiểm tra việc tính trần theo số tiền thực tế khách đã trả trừ đi phần đã hoàn (`paid_vnd - already_refunded`).
-  5. `test_idempotent_replay_does_not_duplicate_audits_or_ledger`: Kiểm tra việc gọi lại nhiều lần cùng một số tiền chỉ tạo đúng 1 dòng ledger và 1 audit event `refund_committed`.
-- Duy trì cổng host `python -m pytest -q` luôn xanh (59/59 passed).
+- **Test đã thêm:**
+  - `src/tests/test_thinh_ledger_policy.py` (5 tests) – kiểm tra các luật host và durability.
+  - `src/tests/test_shapes_policy_integration.py` (9 tests, 3 shapes) – kiểm tra tích hợp chính sách qua các shape khác nhau.
+- **Crash suite:** `reports/crash.json` – 20/20 thành công.
+- **Benchmark:** `reports/benchmark.json` – 4 shape architectures, mỗi seed 5 lần, tổng 20 runs. Kết quả nổi bật:
+  - Workflow: pass 1.0, cost 28.87 VND, mean steps 4.43.
+  - Single: pass 1.0, cost 30.70 VND, mean steps 8.21.
+  - Orchestrator: pass 1.0, cost 40.00 VND, mean steps 2.0.
+  - Swarm: pass 0.986, cost 49.57 VND, variance 0.000816 (failure ở seed 55).
 
 ## 4. Bằng chứng
 
 - File test: `src/tests/test_thinh_ledger_policy.py` (5 passed).
-- Test suite host: `python -m pytest -q` -> 59 passed.
-- Nhánh làm việc: `feat/ledger-tests`.
+- File test: `src/tests/test_shapes_policy_integration.py` (9 passed).
+- Test suite host: `python -m pytest -q` → 59/59 passed.
+- Crash suite: `reports/crash.json` – 20/20 passed.
+- Benchmark: `reports/benchmark.json` – chi tiết ở trên.
+- Nhánh làm việc: `feat/ledger-tests` (đã merge vào `main`).
 
 ## 5. Công cụ AI đã dùng
 
@@ -40,5 +46,7 @@
 
 ## 6. Tự đánh giá
 
-- Hoàn thành đầy đủ các yêu cầu cho thành viên ở mốc CP1 và CP2.
-- Chuẩn bị sẵn bộ kiểm thử an toàn cho nhóm trước khi tích hợp các shape.
+- Hoàn thành đầy đủ các yêu cầu
+- Đạt 0 lỗi trong toàn bộ test suite, crash suite và benchmark.
+- Đảm bảo tính ổn định và hiệu suất cho các kiến trúc mới (Workflow, Single, Orchestrator, Swarm).
+- Đóng góp các test mới, báo cáo kết quả, và hỗ trợ nhóm hoàn thiện báo cáo nhóm.
